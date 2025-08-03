@@ -10,7 +10,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", // local frontend
-      "https://teachz.vercel.app", // deployed frontend (example)
+      "https://teachz.netlify.app", // deployed frontend (example)
     ],
     credentials: true,
   })

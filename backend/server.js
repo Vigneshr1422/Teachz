@@ -6,13 +6,14 @@ require("dotenv").config();
 
 const app = express();
 
-// ✅ Allowed origins for both localhost and Netlify
+// ✅ Allowed frontend origins (localhost + Netlify domains)
 const allowedOrigins = [
   "http://localhost:5173",
   "https://teachz.netlify.app",
+  "https://main--teachz.netlify.app", // ← Netlify preview deploy URL
 ];
 
-// ✅ CORS with explicit origin callback + logging
+// ✅ CORS middleware with dynamic origin check
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -20,23 +21,23 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, origin);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error("❌ Not allowed by CORS"));
       }
     },
     credentials: true,
   })
 );
 
-// ✅ Extra header to ensure credentials are included
+// ✅ Allow credentials in response headers too
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
 
-// ✅ Body parser 
+// ✅ Express body parser
 app.use(express.json());
 
-// ✅ Route setup
+// ✅ Routes
 const authRoutes = require("./routes/auth");
 app.use("/api/auth", authRoutes);
 
@@ -44,12 +45,12 @@ const studentRoutes = require("./routes/student");
 console.log("✅ student.js file loaded");
 app.use("/api/student", studentRoutes);
 
-// ✅ Fallback handler
+// ✅ Fallback route
 app.use((req, res) => {
   res.status(404).json({ msg: "Route not found" });
 });
 
-// ✅ Connect to MongoDB and launch server
+// ✅ Connect MongoDB and start server
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {

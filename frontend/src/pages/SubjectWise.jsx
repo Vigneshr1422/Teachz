@@ -1,18 +1,29 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ import navigate
+import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 
 export default function SubjectWise() {
   const [students, setStudents] = useState([]);
-  const navigate = useNavigate(); // ✅ useNavigate hook
+  const [loading, setLoading] = useState(true); // 🔄 loading state
+  const navigate = useNavigate();
   const teacher = JSON.parse(localStorage.getItem("teacher"));
 
   useEffect(() => {
     if (!teacher) return;
-    axios
-      .get(`/student/${teacher._id}`)
-      .then((res) => setStudents(res.data))
-      .catch((err) => console.error("Fetch error:", err));
+
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(`/student/${teacher._id}`);
+        setStudents(res.data);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        alert("Failed to load subject report.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [teacher]);
 
   const subjects = ["tamil", "english", "maths", "science", "social"];
@@ -48,55 +59,82 @@ export default function SubjectWise() {
         📚 Subject-Wise Performance Report
       </h2>
 
-      <div className="overflow-x-auto">
-        <div className="min-w-[600px] bg-white rounded-xl shadow-lg border border-gray-200">
-          <table className="w-full text-center">
-            <thead className="bg-blue-200 text-blue-800 text-sm sm:text-base font-semibold">
-              <tr>
-                <th className="px-3 py-3 sm:px-5 sm:py-4">📘 Subject</th>
-                <th className="px-3 py-3 sm:px-5 sm:py-4">📊 Avg Mark</th>
-                <th className="px-3 py-3 sm:px-5 sm:py-4">👨‍🎓 Attended</th>
-                <th className="px-3 py-3 sm:px-5 sm:py-4">✅ Passed</th>
-                <th className="px-3 py-3 sm:px-5 sm:py-4">❌ Failed</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm sm:text-base text-gray-700">
-              {subjectStats.map((stat, index) => (
-                <tr
-                  key={stat.subject}
-                  className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                >
-                  <td className="px-3 py-3 sm:px-5 sm:py-3 font-medium text-blue-900">
-                    {stat.subject}
-                  </td>
-                  <td className="px-3 py-3 sm:px-5 sm:py-3">{stat.avg}</td>
-                  <td className="px-3 py-3 sm:px-5 sm:py-3">{stat.attended}</td>
-                  <td className="px-3 py-3 sm:px-5 sm:py-3">
-                    <span className="bg-green-100 text-green-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-                      {stat.passed}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3 sm:px-5 sm:py-3">
-                    <span className="bg-red-100 text-red-600 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-                      {stat.failed}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <svg
+            className="animate-spin h-10 w-10 text-blue-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8z"
+            ></path>
+          </svg>
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <div className="min-w-[600px] bg-white rounded-xl shadow-lg border border-gray-200">
+              <table className="w-full text-center">
+                <thead className="bg-blue-200 text-blue-800 text-sm sm:text-base font-semibold">
+                  <tr>
+                    <th className="px-3 py-3 sm:px-5 sm:py-4">📘 Subject</th>
+                    <th className="px-3 py-3 sm:px-5 sm:py-4">📊 Avg Mark</th>
+                    <th className="px-3 py-3 sm:px-5 sm:py-4">👨‍🎓 Attended</th>
+                    <th className="px-3 py-3 sm:px-5 sm:py-4">✅ Passed</th>
+                    <th className="px-3 py-3 sm:px-5 sm:py-4">❌ Failed</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm sm:text-base text-gray-700">
+                  {subjectStats.map((stat, index) => (
+                    <tr
+                      key={stat.subject}
+                      className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                    >
+                      <td className="px-3 py-3 sm:px-5 sm:py-3 font-medium text-blue-900">
+                        {stat.subject}
+                      </td>
+                      <td className="px-3 py-3 sm:px-5 sm:py-3">{stat.avg}</td>
+                      <td className="px-3 py-3 sm:px-5 sm:py-3">{stat.attended}</td>
+                      <td className="px-3 py-3 sm:px-5 sm:py-3">
+                        <span className="bg-green-100 text-green-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
+                          {stat.passed}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 sm:px-5 sm:py-3">
+                        <span className="bg-red-100 text-red-600 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
+                          {stat.failed}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      {/* 🔙 Back Button */}
-      <div className="mt-10 flex justify-center">
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md text-sm sm:text-base transition"
-        >
-          🔙 Back
-        </button>
-      </div>
+          {/* 🔙 Back Button */}
+          <div className="mt-10 flex justify-center">
+            <button
+              onClick={() => navigate(-1)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md text-sm sm:text-base transition"
+            >
+              🔙 Back
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

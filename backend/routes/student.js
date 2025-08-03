@@ -56,5 +56,18 @@ router.put("/update/:id", async (req, res) => {
 
 // Test route
 router.get("/ping", (req, res) => res.send("Student route working"));
+// 🔸 Delete student by ID
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const deletedStudent = await Student.findByIdAndDelete(req.params.id);
+    if (!deletedStudent) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+    res.json({ message: "Student deleted successfully", student: deletedStudent });
+  } catch (err) {
+    console.error("Delete error:", err);
+    res.status(500).json({ error: "Failed to delete student" });
+  }
+});
 
 module.exports = router;

@@ -2,8 +2,11 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "https://teachz.onrender.com/api",
-  withCredentials: true, // ✅ Add this line to handle CORS cookies/headers
+  baseURL: import.meta.env.DEV
+    ? "http://localhost:5000/api" // local backend
+    : "https://teachz.onrender.com/api", // production backend
+  withCredentials: true,
 });
+
 
 export default instance;

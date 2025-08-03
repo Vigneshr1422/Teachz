@@ -5,13 +5,21 @@ require("dotenv").config();
 
 const app = express();
 
-// 🔐 CORS setup — allow frontend access
+// ✅ CORS configuration — supports localhost and Netlify with credentials
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://teachz.netlify.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // local frontend
-      "https://teachz.netlify.app", // deployed frontend (example)
-    ],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -41,9 +49,10 @@ mongoose
     console.log("Connected to DB:", mongoose.connection.name);
 
     // Start server
-    app.listen(process.env.PORT || 5000, () =>
-      console.log(`🚀 Server running on port ${process.env.PORT || 5000}`)
-    );
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err.message);
